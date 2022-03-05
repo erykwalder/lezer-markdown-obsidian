@@ -1,0 +1,21 @@
+{
+  "name": "obsidian-markdown",
+  "description": "Obsidian Markdown extensions for @lezer/markdown",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@lezer/common": "^0.15.11",
+    "@lezer/markdown": "^0.15.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.6.2"
+  },
+  "scripts": {
+    "test": "jest --maxWorkers=1 --watchAll"
+  }
+}
