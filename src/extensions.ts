@@ -1,3 +1,4 @@
+import { Input, PartialParse, Tree } from "@lezer/common";
 import {
   BlockContext,
   Element,
@@ -10,6 +11,13 @@ import {
   Strikethrough,
   Table,
 } from "@lezer/markdown";
+
+declare module "@lezer/markdown" {
+  class BlockContext {
+    readonly input: Input;
+    checkedYaml: boolean | null;
+  }
+}
 
 /*
   Copyright (C) 2020 by Marijn Haverbeke <marijnh@gmail.com> and others
@@ -279,8 +287,42 @@ export const Footnote: MarkdownConfig = {
   ],
 };
 
+export const YAMLFrontMatter: MarkdownConfig = {
+  defineNodes: ["YAMLFrontMatter", "YAMLMarker", "YAMLContent"],
+  parseBlock: [
+    {
+      name: "YAMLFrontMatter",
+      parse(cx, line) {
+        if (cx.checkedYaml) {
+          return false;
+        }
+        cx.checkedYaml = true;
+        const fmRegex = /(^|^\s*\n)(---\n.+?\n---)/s;
+        const match = fmRegex.exec(cx.input.chunk(0));
+        if (match) {
+          const start = match[1].length;
+          const end = start + match[2].length;
+          cx.addElement(
+            cx.elt("YAMLFrontMatter", start, end, [
+              cx.elt("YAMLMarker", start, start + 3),
+              cx.elt("YAMLContent", start + 4, end - 4),
+              cx.elt("YAMLMarker", end - 3, end),
+            ])
+          );
+          while (cx.lineStart + line.text.length < end && cx.nextLine()) {}
+          line.pos = 3;
+          return true;
+        }
+        return false;
+      },
+      before: "LinkReference",
+    },
+  ],
+};
+
 export const ObsidianMDExtensions = [
   Footnote,
+  YAMLFrontMatter,
   InternalLink,
   Strikethrough,
   Table,

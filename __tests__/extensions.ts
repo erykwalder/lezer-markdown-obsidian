@@ -21,6 +21,9 @@ const specParser = new SpecParser(parser, {
   fM: "FootnoteMark",
   fL: "FootnoteLabel",
   FR: "FootnoteReference",
+  YF: "YAMLFrontMatter",
+  ym: "YAMLMarker",
+  yc: "YAMLContent",
 });
 
 function test(name: string, spec: string, p = parser, only = false) {
@@ -160,6 +163,85 @@ Line 5}
 
 {FR:{fM:[^}{fL:2}{fM:]:} Line 5}
 {BL:{LI:{l:-} {P:Line 6}}}
+  `
+  );
+
+  test(
+    "Frontmatter",
+    `
+{YF:{ym:---}
+{yc:tags: blah}
+{ym:---}}
+
+{HR:---}
+
+{P:some text}
+
+{SH2:A header
+{h:---}}
+  `
+  );
+
+  test(
+    "Frontmatter (trailing text)",
+    `
+{YF:{ym:---}
+{yc:tags: blah}
+{ym:---}}{P:test}
+
+{HR:---}
+
+{P:some text}
+
+{SH2:A header
+{h:---}}
+  `
+  );
+
+  test(
+    "Not Frontmatter (no close)",
+    `
+{HR:---}
+
+{P:some text}
+
+{SH1:A header
+{h:===}}
+  `
+  );
+
+  test(
+    "Not Frontmatter (close indented)",
+    `
+{HR:---}
+
+{P:some text}
+
+ {HR:---}
+  `
+  );
+
+  test(
+    "Not Frontmatter (space after open)",
+    `
+{HR:--- }
+
+{P:some text}
+
+{HR:---}
+  `
+  );
+
+  test(
+    "Not Frontmatter (data before open)",
+    `
+{P:some text}
+
+{HR:---}
+
+{P:some text}
+
+{HR:---}
   `
   );
 });
