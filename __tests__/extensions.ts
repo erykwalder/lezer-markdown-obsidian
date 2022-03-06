@@ -10,6 +10,7 @@ const specParser = new SpecParser(parser, {
   __proto__: null as any,
   T: "Task",
   t: "TaskMarker",
+  /* End Copyright */
   EM: "Embed",
   eM: "EmbedMark",
   H: "Hashtag",
@@ -29,6 +30,10 @@ const specParser = new SpecParser(parser, {
   yc: "YAMLContent",
 });
 
+/*
+  Copyright (C) 2020 by Marijn Haverbeke <marijnh@gmail.com> and others
+  https://github.com/lezer-parser/markdown/blob/f49eb8c8c82cfe45aa213ca1fe2cebc95305b88b/LICENSE
+*/
 function test(name: string, spec: string, p = parser, only = false) {
   let f = it;
   if (only) {
@@ -39,45 +44,57 @@ function test(name: string, spec: string, p = parser, only = false) {
     compareTree(p.parse(doc), tree);
   });
 }
+/* End Copyright */
 
 describe("Obsidian Extension", () => {
   test(
-    "Task list (in unordered list)",
+    "Footnotes",
     `
-{BL:{LI:{l:-} {T:{t:[ ]} foo}}
-{LI:{l:-} {T:{t:[x]} bar}}}`
+{P:Some info{FN:{fM:[^}{fL:1}{fM:]}}}
+
+{P:Some more info{FN:{fM:[^}{fL:a$wacky^foot-note}{fM:]}}}
+  `
   );
 
   test(
-    "Task list (in nested list)",
+    "Footnote Reference (Simple)",
     `
-{BL:{LI:{l:-} {T:{t:[x]} foo}
-  {BL:{LI:{l:-} {T:{t:[ ]} bar}}
-  {LI:{l:-} {T:{t:[x]} baz}}}}
-{LI:{l:-} {T:{t:[ ]} bim}}}`
+{FR:{fM:[^}{fL:1}{fM:]:} Some basic info}
+{FR:{fM:[^}{fL:2}{fM:]:} Some {St:{e:**}bold{e:**}} info}
+  `
   );
 
   test(
-    "Task list (in ordered list)",
+    "Footnote Reference (Multiline)",
     `
-{OL:{LI:{l:1.} {T:{t:[X]} Okay}}}`
+{FR:{fM:[^}{fL:1}{fM:]:} Line 1
+Line 2}
+{FR:{fM:[^}{fL:2}{fM:]:} Line 3
+Line 4
+Line 5}
+  `
   );
 
   test(
-    "Task list (versus setext header)",
+    "Footnote Reference (Interspersed with Bullets)",
     `
-{OL:{LI:{l:1.} {SH1:{Ln:{L:[}X{L:]}} foo
-   {h:===}}}}`
+{FR:{fM:[^}{fL:1}{fM:]:} Line 1}
+{BL:{LI:{l:-} {P:Line 2
+{FN:{fM:[^}{fL:2}{fM:]}}: Line 3}}}
+
+{FR:{fM:[^}{fL:2}{fM:]:} Line 5}
+{BL:{LI:{l:-} {P:Line 6}}}
+  `
   );
-  /* End Copyright */
+
   test(
-    "Task list (different markers)",
+    "Hashtag",
     `
-{BL:{LI:{l:-} {T:{t:[a]} foo}}
-{LI:{l:-} {T:{t:[[]} bar}}
-{LI:{l:-} {T:{t:[]]} baz}}
-{LI:{l:-} {T:{t:[\\]} bim}}}
-    `
+{P:Some text. {H:{hm:#}{hl:tag}} {H:{hm:#}{hl:other-tag9}}^not part
+{H:{hm:#}{hl:ñáø√}}}
+
+{P:Test number #1234}
+  `
   );
 
   test(
@@ -129,48 +146,51 @@ describe("Obsidian Extension", () => {
   `
   );
 
+  /*
+  Copyright (C) 2020 by Marijn Haverbeke <marijnh@gmail.com> and others
+  https://github.com/lezer-parser/markdown/blob/f49eb8c8c82cfe45aa213ca1fe2cebc95305b88b/LICENSE
+*/
   test(
-    "Footnotes",
+    "Task list (in unordered list)",
     `
-{P:Some info{FN:{fM:[^}{fL:1}{fM:]}}}
-
-{P:Some more info{FN:{fM:[^}{fL:a$wacky^foot-note}{fM:]}}}
-  `
+{BL:{LI:{l:-} {T:{t:[ ]} foo}}
+{LI:{l:-} {T:{t:[x]} bar}}}`
   );
 
   test(
-    "Footnote Reference (Simple)",
+    "Task list (in nested list)",
     `
-{FR:{fM:[^}{fL:1}{fM:]:} Some basic info}
-{FR:{fM:[^}{fL:2}{fM:]:} Some {St:{e:**}bold{e:**}} info}
-  `
+{BL:{LI:{l:-} {T:{t:[x]} foo}
+  {BL:{LI:{l:-} {T:{t:[ ]} bar}}
+  {LI:{l:-} {T:{t:[x]} baz}}}}
+{LI:{l:-} {T:{t:[ ]} bim}}}`
   );
 
   test(
-    "Footnote Reference (Multiline)",
+    "Task list (in ordered list)",
     `
-{FR:{fM:[^}{fL:1}{fM:]:} Line 1
-Line 2}
-{FR:{fM:[^}{fL:2}{fM:]:} Line 3
-Line 4
-Line 5}
-  `
+{OL:{LI:{l:1.} {T:{t:[X]} Okay}}}`
   );
 
   test(
-    "Footnote Reference (Interspersed with Bullets)",
+    "Task list (versus setext header)",
     `
-{FR:{fM:[^}{fL:1}{fM:]:} Line 1}
-{BL:{LI:{l:-} {P:Line 2
-{FN:{fM:[^}{fL:2}{fM:]}}: Line 3}}}
-
-{FR:{fM:[^}{fL:2}{fM:]:} Line 5}
-{BL:{LI:{l:-} {P:Line 6}}}
-  `
+{OL:{LI:{l:1.} {SH1:{Ln:{L:[}X{L:]}} foo
+   {h:===}}}}`
+  );
+  /* End Copyright */
+  test(
+    "Task list (different markers)",
+    `
+{BL:{LI:{l:-} {T:{t:[a]} foo}}
+{LI:{l:-} {T:{t:[[]} bar}}
+{LI:{l:-} {T:{t:[]]} baz}}
+{LI:{l:-} {T:{t:[\\]} bim}}}
+    `
   );
 
   test(
-    "Frontmatter",
+    "YAMLFrontMatter",
     `
 {YF:{ym:---}
 {yc:tags: blah}
@@ -186,7 +206,7 @@ Line 5}
   );
 
   test(
-    "Frontmatter (trailing text)",
+    "YAMLFrontMatter (trailing text)",
     `
 {YF:{ym:---}
 {yc:tags: blah}
@@ -202,7 +222,7 @@ Line 5}
   );
 
   test(
-    "Not Frontmatter (no close)",
+    "Not YAMLFrontMatter (no close)",
     `
 {HR:---}
 
@@ -214,7 +234,7 @@ Line 5}
   );
 
   test(
-    "Not Frontmatter (close indented)",
+    "Not YAMLFrontMatter (close indented)",
     `
 {HR:---}
 
@@ -225,7 +245,7 @@ Line 5}
   );
 
   test(
-    "Not Frontmatter (space after open)",
+    "Not YAMLFrontMatter (space after open)",
     `
 {HR:--- }
 
@@ -236,7 +256,7 @@ Line 5}
   );
 
   test(
-    "Not Frontmatter (data before open)",
+    "Not YAMLFrontMatter (data before open)",
     `
 {P:some text}
 
@@ -245,16 +265,6 @@ Line 5}
 {P:some text}
 
 {HR:---}
-  `
-  );
-
-  test(
-    "Hashtag",
-    `
-{P:Some text. {H:{hm:#}{hl:tag}} {H:{hm:#}{hl:other-tag9}}^not part
-{H:{hm:#}{hl:ñáø√}}}
-
-{P:Test number #1234}
   `
   );
 });
