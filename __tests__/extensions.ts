@@ -12,6 +12,9 @@ const specParser = new SpecParser(parser, {
   t: "TaskMarker",
   EM: "Embed",
   eM: "EmbedMark",
+  H: "Hashtag",
+  hm: "HashtagMark",
+  hl: "HashtagLabel",
   IL: "InternalLink",
   iM: "InternalMark",
   iP: "InternalPath",
@@ -242,6 +245,16 @@ Line 5}
 {P:some text}
 
 {HR:---}
+  `
+  );
+
+  test(
+    "Hashtag",
+    `
+{P:Some text. {H:{hm:#}{hl:tag}} {H:{hm:#}{hl:other-tag9}}^not part
+{H:{hm:#}{hl:ñáø√}}}
+
+{P:Test number #1234}
   `
   );
 });
