@@ -28,6 +28,9 @@ const specParser = new SpecParser(parser, {
   YF: "YAMLFrontMatter",
   ym: "YAMLMarker",
   yc: "YAMLContent",
+  XB: "TexBlock",
+  XI: "TexInline",
+  xm: "TexMarker",
 });
 
 /*
@@ -186,6 +189,60 @@ Line 5}
 {LI:{l:-} {T:{t:[[]} bar}}
 {LI:{l:-} {T:{t:[]]} baz}}
 {LI:{l:-} {T:{t:[\\]} bim}}}
+    `
+  );
+
+  test(
+    "Tex Block (End Leaf)",
+    `
+{P:plaintext}
+{XB:{xm:$$}tex content
+- still tex
+> and still tex
+{xm:$$}}
+    `
+  );
+
+  test(
+    "Tex Block (Tailing Text)",
+    `
+{XB:{xm:$$}tex content{xm:$$}} {P:plaintext}
+    `
+  );
+
+  test(
+    "Tex Block (Unterminated)",
+    `
+{XB:{xm:$$}tex content
+
+# this is never terminated
+    }`
+  );
+
+  test(
+    "Tex Inline (1)",
+    `
+{P:plaintext {XI:{xm:$}tex content{xm:$}} more plaintext}
+
+{P:{XI:{xm:$}1.234{xm:$}}}
+    `
+  );
+
+  test(
+    "Tex Inline (2)",
+    `
+{P:$not tex$1.234}
+
+{P:$also not tex $}
+
+{P:$ still not tex$}
+
+{P:{XI:{xm:$}actually tex
+{xm:$}}}
+
+{P:{XI:{xm:$}tex
+more text
+{xm:$}}}
     `
   );
 

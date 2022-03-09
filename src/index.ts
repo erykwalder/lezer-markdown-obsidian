@@ -5,5 +5,6 @@ export {
   ObsidianMDExtensions,
   parser,
   TaskList,
+  Tex,
   YAMLFrontMatter,
 } from "./extensions";

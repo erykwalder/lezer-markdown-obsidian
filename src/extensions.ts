@@ -317,6 +317,75 @@ export const TaskList: MarkdownConfig = {
 };
 /* End Copyright */
 
+export const Tex: MarkdownConfig = {
+  defineNodes: ["TexBlock", "TexInline", "TexMarker"],
+  parseBlock: [
+    {
+      name: "TexBlock",
+      endLeaf: (_, line: Line) =>
+        line.text.slice(line.pos, line.pos + 2) == "$$",
+      // This is an imperfect match for HyperMD, because
+      // in HyperMD the block can start even in inline content.
+      parse(cx: BlockContext, line: Line) {
+        if (line.text.slice(line.pos, line.pos + 2) != "$$") {
+          return false;
+        }
+        const start = cx.lineStart + line.pos;
+        const markers = [cx.elt("TexMarker", start, start + 2)];
+        const regex = /(^|[^\\])\$\$/;
+        let remaining = line.text.slice(line.pos + 2);
+        let startOffset = 2;
+        let match;
+        while (!(match = regex.exec(remaining)) && cx.nextLine()) {
+          remaining = line.text;
+          startOffset = 0;
+        }
+        let end;
+        if (match) {
+          const lineEnd = match.index + match[0].length + startOffset;
+          end = cx.lineStart + lineEnd;
+          markers.push(cx.elt("TexMarker", end - 2, end));
+          if (
+            lineEnd == line.text.length ||
+            /^\s+$/.test(line.text.slice(lineEnd))
+          ) {
+            cx.nextLine();
+          } else {
+            line.pos = line.skipSpace(lineEnd);
+          }
+        } else {
+          end = cx.lineStart + line.text.length;
+        }
+        cx.addElement(cx.elt("TexBlock", start, end, markers));
+        return true;
+      },
+    },
+  ],
+  parseInline: [
+    {
+      name: "TexInline",
+      parse(cx: InlineContext, next: number, pos: number) {
+        let match = /^\$[^$\s]/.exec(cx.text.slice(pos - cx.offset));
+        if (!match) {
+          return -1;
+        }
+        const start = pos;
+        match = /[^\t \\]\$(\D|$)/.exec(cx.text.slice(pos - cx.offset + 1));
+        if (!match) {
+          return -1;
+        }
+        const end = start + 1 + match.index + 2;
+        return cx.addElement(
+          cx.elt("TexInline", start, end, [
+            cx.elt("TexMarker", start, start + 1),
+            cx.elt("TexMarker", end - 1, end),
+          ])
+        );
+      },
+    },
+  ],
+};
+
 export const YAMLFrontMatter: MarkdownConfig = {
   defineNodes: ["YAMLFrontMatter", "YAMLMarker", "YAMLContent"],
   parseBlock: [
@@ -357,6 +426,7 @@ export const ObsidianMDExtensions = [
   Strikethrough,
   Table,
   TaskList,
+  Tex,
   YAMLFrontMatter,
 ];
 
