@@ -1,4 +1,5 @@
 export {
+  Comment,
   Footnote,
   Hashtag,
   InternalLink,

@@ -11,6 +11,8 @@ const specParser = new SpecParser(parser, {
   T: "Task",
   t: "TaskMarker",
   /* End Copyright */
+  C: "Comment",
+  cm: "CommentMarker",
   EM: "Embed",
   eM: "EmbedMark",
   H: "Hashtag",
@@ -50,6 +52,43 @@ function test(name: string, spec: string, p = parser, only = false) {
 /* End Copyright */
 
 describe("Obsidian Extension", () => {
+  test(
+    "Comment (End Leaf)",
+    `
+{P:plaintext}
+{C:{cm:%%}comment
+- still comment
+> and still comment
+{cm:%%}}
+    `
+  );
+
+  test(
+    "Comment (Tailing Text)",
+    `
+{C:{cm:%%}comment{cm:%%}} {P:plaintext}
+    `
+  );
+
+  test(
+    "Comment (Unterminated)",
+    `
+{C:{cm:%%}comment
+
+# this is never terminated
+    }`
+  );
+
+  test(
+    "Comment Inline (1)",
+    `
+{P:plaintext {C:{cm:%%}comment{cm:%%}} more plaintext}
+
+{P:plaintext %%not a comment
+more %% plaintext}
+    `
+  );
+
   test(
     "Footnotes",
     `

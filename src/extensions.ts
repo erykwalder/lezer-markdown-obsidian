@@ -19,6 +19,70 @@ declare module "@lezer/markdown" {
   }
 }
 
+export const Comment: MarkdownConfig = {
+  defineNodes: ["Comment", "CommentMarker"],
+  parseBlock: [
+    {
+      name: "CommentBlock",
+      endLeaf: (cx, line: Line) => {
+        return line.text.slice(line.pos, line.pos + 2) == "%%";
+      },
+      parse(cx: BlockContext, line: Line) {
+        if (line.text.slice(line.pos, line.pos + 2) != "%%") {
+          return false;
+        }
+        const start = cx.lineStart + line.pos;
+        const markers = [cx.elt("CommentMarker", start, start + 2)];
+        const regex = /(^|[^\\])\%\%/;
+        let remaining = line.text.slice(line.pos + 2);
+        let startOffset = 2;
+        let match;
+        while (!(match = regex.exec(remaining)) && cx.nextLine()) {
+          remaining = line.text;
+          startOffset = 0;
+        }
+        let end;
+        if (match) {
+          const lineEnd = match.index + match[0].length + startOffset;
+          end = cx.lineStart + lineEnd;
+          markers.push(cx.elt("CommentMarker", end - 2, end));
+          if (
+            lineEnd == line.text.length ||
+            /^\s+$/.test(line.text.slice(lineEnd))
+          ) {
+            cx.nextLine();
+          } else {
+            line.pos = line.skipSpace(lineEnd);
+          }
+        } else {
+          end = cx.lineStart + line.text.length;
+        }
+        cx.addElement(cx.elt("Comment", start, end, markers));
+        return true;
+      },
+    },
+  ],
+  parseInline: [
+    {
+      name: "CommentInline",
+      parse(cx: InlineContext, next: number, pos: number) {
+        let match = /^%%[^\n]*[^\n\\]%%/.exec(cx.text.slice(pos - cx.offset));
+        if (!match) {
+          return -1;
+        }
+        const start = pos;
+        const end = pos + match[0].length;
+        return cx.addElement(
+          cx.elt("Comment", start, end, [
+            cx.elt("CommentMarker", start, start + 2),
+            cx.elt("CommentMarker", end - 2, end),
+          ])
+        );
+      },
+    },
+  ],
+};
+
 class FootnoteReferenceParser implements LeafBlockParser {
   constructor(private labelEnd: number) {}
 
@@ -420,6 +484,7 @@ export const YAMLFrontMatter: MarkdownConfig = {
 };
 
 export const ObsidianMDExtensions = [
+  Comment,
   Footnote,
   Hashtag,
   InternalLink,
