@@ -263,6 +263,8 @@ Line 5}
     `
 {P:plaintext {XI:{xm:$}tex content{xm:$}} more plaintext}
 
+{P:plaintext {XI:{xm:$}tex content{xm:$}}more plaintext}
+
 {P:{XI:{xm:$}1.234{xm:$}}}
     `
   );

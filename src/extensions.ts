@@ -429,16 +429,14 @@ export const Tex: MarkdownConfig = {
     {
       name: "TexInline",
       parse(cx: InlineContext, next: number, pos: number) {
-        let match = /^\$[^$\s]/.exec(cx.text.slice(pos - cx.offset));
+        let match = /^\$(?:[^$\t ][^$]*)?[^$\t \\]\$(\D|$)/.exec(
+          cx.text.slice(pos - cx.offset)
+        );
         if (!match) {
           return -1;
         }
         const start = pos;
-        match = /[^\t \\]\$(\D|$)/.exec(cx.text.slice(pos - cx.offset + 1));
-        if (!match) {
-          return -1;
-        }
-        const end = start + 1 + match.index + 2;
+        const end = start + match[0].length - match[1].length;
         return cx.addElement(
           cx.elt("TexInline", start, end, [
             cx.elt("TexMarker", start, start + 1),
