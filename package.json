@@ -2,7 +2,9 @@
   "name": "obsidian-markdown",
   "description": "Obsidian Markdown extensions for @lezer/markdown",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "type": "module",
   "license": "MIT",
   "dependencies": {
@@ -12,10 +14,13 @@
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "jest": "^27.5.1",
+    "rollup": "^2.70.0",
+    "rollup-plugin-typescript2": "^0.31.2",
     "ts-jest": "^27.1.3",
     "typescript": "^4.6.2"
   },
   "scripts": {
-    "test": "jest --maxWorkers=1 --watchAll"
+    "test": "jest --maxWorkers=1 --watchAll",
+    "build": "rollup -c rollup.config.js"
   }
 }
