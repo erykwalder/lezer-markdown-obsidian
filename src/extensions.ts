@@ -13,7 +13,7 @@ import {
 } from "@lezer/markdown";
 
 declare module "@lezer/markdown" {
-  class BlockContext {
+  interface BlockContext {
     readonly input: Input;
     checkedYaml: boolean | null;
   }
@@ -24,7 +24,7 @@ export const Comment: MarkdownConfig = {
   parseBlock: [
     {
       name: "CommentBlock",
-      endLeaf: (cx, line: Line) => {
+      endLeaf: (_, line: Line) => {
         return line.text.slice(line.pos, line.pos + 2) == "%%";
       },
       parse(cx: BlockContext, line: Line) {
@@ -129,7 +129,7 @@ export const Footnote: MarkdownConfig = {
   parseInline: [
     {
       name: "Footnote",
-      parse(cx: InlineContext, _: number, pos: number) {
+      parse(cx: InlineContext, _, pos: number) {
         // typically [^1], but inside can match any characters but
         // square brackets and spaces.
         const match = /^\[\^[^\s[\]]+\]/.exec(cx.text.slice(pos - cx.offset));
@@ -151,7 +151,7 @@ export const Footnote: MarkdownConfig = {
   parseBlock: [
     {
       name: "FootnoteReference",
-      leaf(cx: BlockContext, leaf: LeafBlock): LeafBlockParser | null {
+      leaf(_, leaf: LeafBlock): LeafBlockParser | null {
         const ref = isFootnoteRef(leaf.content);
         if (ref != -1) {
           return new FootnoteReferenceParser(leaf.start + ref);
@@ -176,7 +176,7 @@ export const Hashtag: MarkdownConfig = {
   parseInline: [
     {
       name: "Hashtag",
-      parse(cx, next, pos) {
+      parse(cx: InlineContext, next: number, pos: number) {
         if (next != 35 /* # */) {
           return -1;
         }
@@ -211,7 +211,7 @@ export const InternalLink: MarkdownConfig = {
   parseInline: [
     {
       name: "InternalLink",
-      parse(cx: InlineContext, _: number, pos: number) {
+      parse(cx: InlineContext, _, pos: number) {
         const el = parseInternalLink(cx, pos);
         if (el) {
           return cx.addElement(el);
@@ -339,6 +339,21 @@ function parseDisplay(cx: InlineContext, start: number): Element | null {
   return null;
 }
 
+const MarkDelim = { resolve: "Mark", mark: "MarkMarker" };
+
+export const Mark: MarkdownConfig = {
+  defineNodes: ["Mark", "MarkMarker"],
+  parseInline: [
+    {
+      name: "Mark",
+      parse(cx: InlineContext, next: number, pos: number) {
+        if (next != 61 /* '=' */ || cx.char(pos + 1) != 61) return -1;
+        return cx.addDelimiter(MarkDelim, pos, pos + 2, true, true);
+      },
+    },
+  ],
+};
+
 /*
   Copyright (C) 2020 by Marijn Haverbeke <marijnh@gmail.com> and others
   https://github.com/lezer-parser/markdown/blob/f49eb8c8c82cfe45aa213ca1fe2cebc95305b88b/LICENSE
@@ -370,7 +385,7 @@ export const TaskList: MarkdownConfig = {
   parseBlock: [
     {
       name: "TaskList",
-      leaf(cx, leaf) {
+      leaf(cx: BlockContext, leaf: LeafBlock) {
         return /^\[.\]/.test(leaf.content) && cx.parentType().name == "ListItem"
           ? new TaskParser()
           : null;
@@ -428,7 +443,7 @@ export const Tex: MarkdownConfig = {
   parseInline: [
     {
       name: "TexInline",
-      parse(cx: InlineContext, next: number, pos: number) {
+      parse(cx: InlineContext, _, pos: number) {
         let match = /^\$(?:[^$\t ][^$]*)?[^$\t \\]\$(\D|$)/.exec(
           cx.text.slice(pos - cx.offset)
         );
@@ -453,7 +468,7 @@ export const YAMLFrontMatter: MarkdownConfig = {
   parseBlock: [
     {
       name: "YAMLFrontMatter",
-      parse(cx, line) {
+      parse(cx: BlockContext, line: Line) {
         if (cx.checkedYaml) {
           return false;
         }
@@ -486,6 +501,7 @@ export const ObsidianMDExtensions = [
   Footnote,
   Hashtag,
   InternalLink,
+  Mark,
   Strikethrough,
   Table,
   TaskList,

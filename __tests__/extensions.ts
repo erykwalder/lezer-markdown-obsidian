@@ -15,6 +15,10 @@ const specParser = new SpecParser(parser, {
   cm: "CommentMarker",
   EM: "Embed",
   eM: "EmbedMark",
+  FN: "Footnote",
+  fM: "FootnoteMark",
+  fL: "FootnoteLabel",
+  FR: "FootnoteReference",
   H: "Hashtag",
   hm: "HashtagMark",
   hl: "HashtagLabel",
@@ -23,16 +27,14 @@ const specParser = new SpecParser(parser, {
   iP: "InternalPath",
   iS: "InternalSubpath",
   iD: "InternalDisplay",
-  FN: "Footnote",
-  fM: "FootnoteMark",
-  fL: "FootnoteLabel",
-  FR: "FootnoteReference",
-  YF: "YAMLFrontMatter",
-  ym: "YAMLMarker",
-  yc: "YAMLContent",
+  M: "Mark",
+  mm: "MarkMarker",
   XB: "TexBlock",
   XI: "TexInline",
   xm: "TexMarker",
+  YF: "YAMLFrontMatter",
+  ym: "YAMLMarker",
+  yc: "YAMLContent",
 });
 
 /*
@@ -192,6 +194,40 @@ Line 5}
   Copyright (C) 2020 by Marijn Haverbeke <marijnh@gmail.com> and others
   https://github.com/lezer-parser/markdown/blob/f49eb8c8c82cfe45aa213ca1fe2cebc95305b88b/LICENSE
 */
+  test(
+    "Mark",
+    `
+{P:{M:{mm:==}Hi{mm:==}} Hello, world!}`
+  );
+
+  test(
+    "Mark 2",
+    `
+{P:This ==has a}
+
+{P:new paragraph==.}`
+  );
+
+  test(
+    "Mark (nested)",
+    `
+{P:Nesting {St:{e:**}with {M:{mm:==}emphasis{mm:==}}{e:**}}.}`
+  );
+
+  test(
+    "Mark (overlapping)",
+    `
+{P:One {St:{e:**}two ==three{e:**}} four==}
+
+{P:One {M:{mm:==}two **three{mm:==}} four**}`
+  );
+
+  test(
+    "Mark (escaped)",
+    `
+{P:A {Esc:\\=}=b c==}`
+  );
+
   test(
     "Task list (in unordered list)",
     `

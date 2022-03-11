@@ -3,6 +3,7 @@ export {
   Footnote,
   Hashtag,
   InternalLink,
+  Mark,
   ObsidianMDExtensions,
   parser,
   TaskList,
