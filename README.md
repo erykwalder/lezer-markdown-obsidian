@@ -29,9 +29,13 @@ import { Comment, InternalLink } from "lezer-markdown-obsidian";
 const parser = mdParser.configure([Comment, InternalLink]);
 ```
 
-### `ObsidianMDExtensions`
+### `Extensions`
 
 An array of all the extensions for Obsidian's markdown syntax.
+
+### `BlockAndInline`
+
+An array of all the extensions except YAML frontmatter.
 
 ### `Comment`
 
@@ -72,6 +76,10 @@ Internal embeds are structured like:
 `![[File#heading]]`
 
 The `#heading` and `|display` parts are optional. Heading can be a `#^blockid` instead, and multiple headings can be chained together.
+
+### `Mark`
+
+This adds support for highlight marks in the form of `==highlighted==`.
 
 ### `TaskList`
 

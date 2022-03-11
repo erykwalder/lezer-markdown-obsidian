@@ -1,10 +1,11 @@
 export {
+  BlockAndInline,
   Comment,
+  Extensions,
   Footnote,
   Hashtag,
   InternalLink,
   Mark,
-  ObsidianMDExtensions,
   parser,
   TaskList,
   Tex,

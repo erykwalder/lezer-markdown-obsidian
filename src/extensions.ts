@@ -339,7 +339,7 @@ function parseDisplay(cx: InlineContext, start: number): Element | null {
   return null;
 }
 
-const MarkDelim = { resolve: "Mark", mark: "MarkMarker" };
+export const MarkDelim = { resolve: "Mark", mark: "MarkMarker" };
 
 export const Mark: MarkdownConfig = {
   defineNodes: ["Mark", "MarkMarker"],
@@ -496,7 +496,7 @@ export const YAMLFrontMatter: MarkdownConfig = {
   ],
 };
 
-export const ObsidianMDExtensions = [
+export const Extensions = [
   Comment,
   Footnote,
   Hashtag,
@@ -509,4 +509,6 @@ export const ObsidianMDExtensions = [
   YAMLFrontMatter,
 ];
 
-export const parser = defParser.configure(ObsidianMDExtensions);
+export const BlockAndInline = Extensions.slice(0, -1);
+
+export const parser = defParser.configure(Extensions);
