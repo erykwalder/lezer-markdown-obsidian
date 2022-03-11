@@ -19,6 +19,8 @@ declare module "@lezer/markdown" {
   }
 }
 
+const CommentDelim = { resolve: "Comment", mark: "CommentMarker" };
+
 export const Comment: MarkdownConfig = {
   defineNodes: ["Comment", "CommentMarker"],
   parseBlock: [
@@ -66,18 +68,17 @@ export const Comment: MarkdownConfig = {
     {
       name: "CommentInline",
       parse(cx: InlineContext, next: number, pos: number) {
-        let match = /^%%[^\n]*[^\n\\]%%/.exec(cx.text.slice(pos - cx.offset));
-        if (!match) {
-          return -1;
+        if (next == 37 && cx.char(pos + 1) == 37) {
+          let canClose = true;
+          if (
+            cx.slice(cx.offset, pos).lastIndexOf("\n") >
+            cx.slice(cx.offset, pos).lastIndexOf("%%")
+          ) {
+            canClose = false;
+          }
+          return cx.addDelimiter(CommentDelim, pos, pos + 2, true, canClose);
         }
-        const start = pos;
-        const end = pos + match[0].length;
-        return cx.addElement(
-          cx.elt("Comment", start, end, [
-            cx.elt("CommentMarker", start, start + 2),
-            cx.elt("CommentMarker", end - 2, end),
-          ])
-        );
+        return -1;
       },
     },
   ],
@@ -396,6 +397,8 @@ export const TaskList: MarkdownConfig = {
 };
 /* End Copyright */
 
+const TexDelim = { resolve: "TexInline", mark: "TexMarker" };
+
 export const Tex: MarkdownConfig = {
   defineNodes: ["TexBlock", "TexInline", "TexMarker"],
   parseBlock: [
@@ -443,21 +446,15 @@ export const Tex: MarkdownConfig = {
   parseInline: [
     {
       name: "TexInline",
-      parse(cx: InlineContext, _, pos: number) {
-        let match = /^\$(?:[^$\t ][^$]*)?[^$\t \\]\$(\D|$)/.exec(
-          cx.text.slice(pos - cx.offset)
-        );
-        if (!match) {
+      parse(cx: InlineContext, next: number, pos: number) {
+        if (next != 36 /* $ */) {
           return -1;
         }
-        const start = pos;
-        const end = start + match[0].length - match[1].length;
-        return cx.addElement(
-          cx.elt("TexInline", start, end, [
-            cx.elt("TexMarker", start, start + 1),
-            cx.elt("TexMarker", end - 1, end),
-          ])
-        );
+        const before = cx.slice(pos - 1, pos);
+        const after = cx.slice(pos + 1, pos + 2);
+        const canClose = /[^ \t]/.test(before) && !/\d/.test(after);
+        const canOpen = /[^$ \t]/.test(after);
+        return cx.addDelimiter(TexDelim, pos, pos + 1, canOpen, canClose);
       },
     },
   ],
