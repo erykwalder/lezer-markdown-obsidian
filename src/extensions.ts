@@ -470,11 +470,20 @@ export const YAMLFrontMatter: MarkdownConfig = {
           return false;
         }
         cx.checkedYaml = true;
-        const fmRegex = /(^|^\s*\n)(---\n.+?\n---)/s;
-        const match = fmRegex.exec(cx.input.chunk(0));
-        if (match) {
-          const start = match[1].length;
-          const end = start + match[2].length;
+        if(cx.input.lineChunks) {
+          let cline = cx.input.chunk(0);
+          if(cline !== "---") return false;
+          let start = cx.lineStart;
+          let end = 0;
+          while(cx.nextLine()) {
+            let cline = cx.input.chunk(cx.lineStart);
+            if(cline === "---" || cline === "---\n") {
+              end = cx.lineStart + 3;
+              break;
+            }
+          }
+          if(end === 0) return false;
+          line.pos = 3;
           cx.addElement(
             cx.elt("YAMLFrontMatter", start, end, [
               cx.elt("YAMLMarker", start, start + 3),
@@ -482,9 +491,24 @@ export const YAMLFrontMatter: MarkdownConfig = {
               cx.elt("YAMLMarker", end - 3, end),
             ])
           );
-          while (cx.lineStart + line.text.length < end && cx.nextLine()) {}
-          line.pos = 3;
           return true;
+        } else {
+          const fmRegex = /(^|^\s*\n)(---\n.+?\n---)/s;
+          const match = fmRegex.exec(cx.input.chunk(0));
+          if (match) {
+            const start = match[1].length;
+            const end = start + match[2].length;
+            cx.addElement(
+              cx.elt("YAMLFrontMatter", start, end, [
+                cx.elt("YAMLMarker", start, start + 3),
+                cx.elt("YAMLContent", start + 4, end - 4),
+                cx.elt("YAMLMarker", end - 3, end),
+              ])
+            );
+            while (cx.lineStart + line.text.length < end && cx.nextLine()) {}
+            line.pos = 3;
+            return true;
+          }
         }
         return false;
       },
